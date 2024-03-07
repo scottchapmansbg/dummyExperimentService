@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 @WebFluxTest(controllers = ExperimentControllerV2.class)
 @AutoConfigureWebTestClient
 @ContextConfiguration(classes = ExperimentControllerV2.class)
-class ExperimentControllerTest {
+class ExperimentControllerV2Test {
 
     @Autowired
     private WebTestClient webTestClient;
@@ -133,5 +133,19 @@ class ExperimentControllerTest {
                     assert responseBody != null;
                     assert responseBody.getId().equals(userId);
                 });
+    }
+
+    @Test
+    void deleteAssignedExperiment() {
+        var experimentId = "1";
+        when(assignedExperimentsService.deleteById(experimentId)).thenReturn(Mono.empty());
+
+        String UNASSIGN_URL = "/v2/unassign";
+        webTestClient
+                .delete()
+                .uri(UNASSIGN_URL + "/userId=" + experimentId)
+                .exchange()
+                .expectStatus().isNoContent();
+
     }
 }

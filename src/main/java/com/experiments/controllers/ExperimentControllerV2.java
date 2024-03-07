@@ -53,7 +53,7 @@ public class ExperimentControllerV2 {
 
     @GetMapping("/assign")
     @ResponseStatus(HttpStatus.OK)
-    public Mono<ExperimentResponse> assignUserToExperiment(@RequestParam String userId) {
+    public Mono<ExperimentResponse> assignUserToExperiment(@RequestParam @Valid String userId) {
         log.info("Assigning user {} to experiment", userId);
         return experimentService.findAll().collectList()
                 .flatMap(experiments -> experimentService.assignExperiment(userId, experiments))
@@ -66,16 +66,23 @@ public class ExperimentControllerV2 {
 
     @DeleteMapping("/experiment/{experimentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<Void> deleteExperiment(@PathVariable String experimentId) {
+    public Mono<Void> deleteExperiment(@PathVariable @Valid String experimentId) {
         log.info("Deleting experiment with id: {}", experimentId);
         return experimentService.deleteById(experimentId);
     }
 
     @GetMapping("/experiment/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public Mono<Experiment> getAssignedExperiment(@PathVariable String userId) {
+    public Mono<Experiment> getAssignedExperiment(@Valid @PathVariable String userId) {
         log.info("Getting assigned experiment for user: {}", userId);
         return assignedExperimentsRepository.findById(userId);
+    }
+
+    @DeleteMapping("/unassign/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Boolean> deleteAssignedExperiment(@Valid @PathVariable String userId) {
+        log.info("Deleting assigned experiment for user: {}", userId);
+        return assignedExperimentsRepository.deleteById(userId);
     }
 
 }
