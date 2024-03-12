@@ -86,8 +86,7 @@ class ExperimentControllerV2Test {
 
         when(experimentService.findAll()).thenReturn(Flux.fromIterable(experimentList));
 
-        when(experimentService.assignExperiment(userId, experimentList
-        )).thenReturn(Mono.just(new Experiment(userId, testDate, "WebsiteColour", "Brown")));
+        when(experimentService.assignExperiment(userId)).thenReturn(Mono.just(new Experiment(userId, testDate, "WebsiteColour", "Brown")));
 
         String ASSIGN_URL = "/v2/assign";
         webTestClient

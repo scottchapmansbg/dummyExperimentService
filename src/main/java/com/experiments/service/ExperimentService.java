@@ -2,13 +2,17 @@ package com.experiments.service;
 
 import com.experiments.domain.Experiment;
 import com.experiments.exceptionhandler.NoExperimentsAvailableException;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.caffeine.CaffeineCache;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.data.redis.core.ReactiveRedisOperations;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -16,8 +20,10 @@ import java.util.Objects;
 public class ExperimentService {
     private final ReactiveRedisOperations<String, Experiment> operations;
 
-    public ExperimentService(ReactiveRedisOperations<String, Experiment> operations) {
+    private final Cache experimentsCache;
+    public ExperimentService(ReactiveRedisOperations<String, Experiment> operations, CaffeineCacheManager cacheManager) {
         this.operations = operations;
+        this.experimentsCache = cacheManager.getCache("experiments");
     }
 
     public Mono<Experiment> save(String id, Experiment experiment) {
@@ -45,11 +51,21 @@ public class ExperimentService {
         return operations.opsForValue().delete(userId).then();
     }
 
-    public Mono<Experiment> assignExperiment(String userId, List<Experiment> experiments) {
-        Objects.requireNonNull(userId, "Id cannot be null");
-        Objects.requireNonNull(experiments, "Experiments cannot be null");
+    @Cacheable(value = "experiments", key = "#userId")
+    public Mono<Experiment> assignExperiment(String userId) {
         log.info("Assigning experiment to user with id: {}", userId);
-        int experimentNumber =Math.floorMod(userId.hashCode(), experiments.size());
-        return Mono.just(experiments.get(experimentNumber));
+        Objects.requireNonNull(userId, "Id cannot be null");
+
+        return Mono.justOrEmpty(experimentsCache.get(userId, Experiment.class))
+                .switchIfEmpty(findAll().collectList().flatMap(experimentList -> {
+                    log.info("Assigned Experiment not in cache. Retrieving from db");
+                    if (experimentList.isEmpty()) {
+                        return Mono.error(new NoExperimentsAvailableException("No experiments available"));
+                    }
+                    int index = Math.floorMod(userId.hashCode(), experimentList.size());
+                    Experiment experiment = experimentList.get(index);
+                    experimentsCache.put(userId, experiment);
+                    return Mono.just(experiment);
+                })).log();
     }
 }

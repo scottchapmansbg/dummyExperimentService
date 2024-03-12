@@ -7,6 +7,7 @@ import com.experiments.domain.ExperimentResponse;
 import com.experiments.service.ExperimentService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,10 +54,10 @@ public class ExperimentControllerV2 {
 
     @GetMapping("/assign")
     @ResponseStatus(HttpStatus.OK)
+    @CachePut(value = "assignedExperiments")
     public Mono<ExperimentResponse> assignUserToExperiment(@RequestParam @Valid String userId) {
         log.info("Assigning user {} to experiment", userId);
-        return experimentService.findAll().collectList()
-                .flatMap(experiments -> experimentService.assignExperiment(userId, experiments))
+        return experimentService.assignExperiment(userId)
                 .flatMap(experiment -> Mono.just(new ExperimentResponse(experiment, userId)))
                 .onErrorResume(
                         NullPointerException.class,

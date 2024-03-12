@@ -34,9 +34,14 @@ dependencies {
     implementation ("com.fasterxml.jackson.core:jackson-annotations:2.16.1")
     implementation ("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.1")
     implementation("org.springframework:spring-context-support:6.1.4")
+    implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
+
     compileOnly("org.projectlombok:lombok")
+
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+
     annotationProcessor("org.projectlombok:lombok")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.springframework.graphql:spring-graphql-test")

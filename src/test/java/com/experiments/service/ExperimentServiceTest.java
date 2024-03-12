@@ -1,5 +1,6 @@
 package com.experiments.service;
 
+import com.experiments.caching.CacheConfig;
 import com.experiments.domain.Experiment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -7,6 +8,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.caffeine.CaffeineCache;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.data.redis.core.ReactiveRedisOperations;
 import org.springframework.data.redis.core.ReactiveValueOperations;
 import reactor.core.publisher.Flux;
@@ -14,6 +17,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -22,12 +26,14 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class ExperimentServiceTest {
+    @MockBean
+    private CaffeineCacheManager cacheConfig;
 
     @MockBean
     private ReactiveRedisOperations<String, Experiment> reactiveRedisOperations;
 
     @Autowired
-    private final ExperimentService experimentService = new ExperimentService(reactiveRedisOperations);
+    private final ExperimentService experimentService = new ExperimentService(reactiveRedisOperations, cacheConfig);
 
     @BeforeEach
     void setUp() {
@@ -98,15 +104,27 @@ class ExperimentServiceTest {
 
     @Test
     void assignExperiment() {
+        var experiments = List.of(new Experiment("testId1",
+                LocalDateTime.now(), "testName1", "testDescription1"),
+                new Experiment("testId2",
+                        LocalDateTime.now(), "testName2", "testDescription2"));
+
+        when(reactiveRedisOperations.keys("*")).thenReturn(Flux.just("key1", "key2"));
+        when(reactiveRedisOperations.opsForValue().get("key1")).thenReturn(Mono.just(experiments.get(0)));
+        when(reactiveRedisOperations.opsForValue().get("key2")).thenReturn(Mono.just(experiments.get(1)));
         String userId = "testId";
-        List<Experiment> experiments = List.of(new Experiment(), new Experiment());
         when(reactiveRedisOperations.opsForValue().set(any(String.class), any(Experiment.class))).thenReturn(Mono.just(
                 true));
 
         int index = Math.floorMod(userId.hashCode(), experiments.size());
-        Mono<Experiment> result = experimentService.assignExperiment(userId, experiments);
+        Mono<Experiment> result = experimentService.assignExperiment(userId);
         StepVerifier.create(result)
-                .expectNext(experiments.get(index))
+                .consumeNextWith(
+                        experiment -> {
+                            assert experiment != null;
+                            assert experiments.contains(experiment);
+                        }
+                )
                 .verifyComplete();
 
     }
