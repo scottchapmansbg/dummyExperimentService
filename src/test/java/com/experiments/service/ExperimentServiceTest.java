@@ -1,6 +1,5 @@
 package com.experiments.service;
 
-import com.experiments.caching.CacheConfig;
 import com.experiments.domain.Experiment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,7 +7,6 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.data.redis.core.ReactiveRedisOperations;
 import org.springframework.data.redis.core.ReactiveValueOperations;
@@ -32,8 +30,14 @@ class ExperimentServiceTest {
     @MockBean
     private ReactiveRedisOperations<String, Experiment> reactiveRedisOperations;
 
+    @MockBean
+    private LoggedOutExperimentAssignmentService loggedOutExperimentAssignmentService;
+
+    private UserService userService;
     @Autowired
-    private final ExperimentService experimentService = new ExperimentService(reactiveRedisOperations, cacheConfig);
+    private final ExperimentService experimentService = new ExperimentService(reactiveRedisOperations,
+            userService, loggedOutExperimentAssignmentService, 
+            cacheConfig);
 
     @BeforeEach
     void setUp() {
@@ -117,7 +121,7 @@ class ExperimentServiceTest {
                 true));
 
         int index = Math.floorMod(userId.hashCode(), experiments.size());
-        Mono<Experiment> result = experimentService.assignExperiment(userId);
+        Mono<Experiment> result = experimentService.assignExperimentToLoggedInUser(userId);
         StepVerifier.create(result)
                 .consumeNextWith(
                         experiment -> {

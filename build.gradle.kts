@@ -35,6 +35,7 @@ dependencies {
     implementation ("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.1")
     implementation("org.springframework:spring-context-support:6.1.4")
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
+    implementation("commons-codec:commons-codec:1.15")
 
     compileOnly("org.projectlombok:lombok")
 

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -57,12 +58,19 @@ public class ExperimentControllerV2 {
     @CachePut(value = "assignedExperiments")
     public Mono<ExperimentResponse> assignUserToExperiment(@RequestParam @Valid String userId) {
         log.info("Assigning user {} to experiment", userId);
-        return experimentService.assignExperiment(userId)
+        return experimentService.assignExperimentToLoggedInUser(userId)
                 .flatMap(experiment -> Mono.just(new ExperimentResponse(experiment, userId)))
                 .onErrorResume(
                         NullPointerException.class,
                         e -> Mono.error(new NoExperimentsAvailableException("No experiments available"))
                 );
+    }
+
+    @GetMapping("/assignLoggedOut")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<ExperimentResponse> assignLoggedOutUserToExperiment(ServerWebExchange exchange) {
+        log.info("Assigning logged out user to experiment");
+        return experimentService.assignExperimentToLoggedOutUser(exchange);
     }
 
     @DeleteMapping("/experiment/{experimentId}")
