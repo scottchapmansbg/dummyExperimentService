@@ -8,12 +8,14 @@ import com.experiments.domain.ExperimentResponse;
 import com.experiments.service.AssignedExperimentsService;
 import com.experiments.service.ExperimentService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -36,6 +38,8 @@ class ExperimentControllerV2Test {
     private final String EXPERIMENT_URL = "/v2/experiment";
 
     private final LocalDateTime testDate = LocalDateTime.now();
+
+    private final ServerWebExchange serverWebExchange = Mockito.mock(ServerWebExchange.class);
 
     private final String userId = "1";
 
@@ -81,12 +85,16 @@ class ExperimentControllerV2Test {
 
     @Test
     void assignUserToExperiment() {
+
+        when(assignedExperimentsService.assignExperimentToLoggedInUser(userId, serverWebExchange)).thenReturn(
+                Mono.just(new Experiment(userId, testDate, "WebsiteColour", "Brown")));
+
         when(assignedExperimentsService.save(userId, new Experiment(userId, testDate, "WebsiteColour", "Brown"))).thenReturn(
                 Mono.just(new Experiment(userId, testDate, "WebsiteColour", "Brown")));
 
         when(experimentService.findAll()).thenReturn(Flux.fromIterable(experimentList));
 
-        when(experimentService.assignExperimentToLoggedInUser(userId)).thenReturn(Mono.just(new Experiment(userId, testDate, "WebsiteColour", "Brown")));
+        when(assignedExperimentsService.assignExperimentToLoggedInUser(userId, serverWebExchange)).thenReturn(Mono.just(new Experiment(userId, testDate, "WebsiteColour", "Brown")));
 
         String ASSIGN_URL = "/v2/assign";
         webTestClient

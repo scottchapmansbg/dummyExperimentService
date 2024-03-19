@@ -28,14 +28,15 @@ import reactor.core.publisher.Mono;
 public class ExperimentControllerV2 {
 
     private final ExperimentService experimentService;
-    private final AssignedExperimentsService assignedExperimentsRepository;
+    private final AssignedExperimentsService assignedExperimentsService;
+
 
     ExperimentControllerV2(
-            AssignedExperimentsService assignedExperimentsRepository,
+            AssignedExperimentsService assignedExperimentsService,
             ExperimentService experimentService
     ) {
         this.experimentService = experimentService;
-        this.assignedExperimentsRepository = assignedExperimentsRepository;
+        this.assignedExperimentsService = assignedExperimentsService;
     }
 
     @PostMapping("/experiment")
@@ -55,9 +56,9 @@ public class ExperimentControllerV2 {
     @GetMapping("/assign")
     @ResponseStatus(HttpStatus.OK)
     @CachePut(value = "assignedExperiments")
-    public Mono<ExperimentResponse> assignUserToExperiment(@RequestParam @Valid String userId) {
+    public Mono<ExperimentResponse> assignUserToExperiment(@RequestParam @Valid String userId, ServerWebExchange exchange) {
         log.info("Assigning user {} to experiment", userId);
-        return experimentService.assignExperimentToLoggedInUser(userId)
+        return assignedExperimentsService.assignExperimentToLoggedInUser(userId, exchange)
                 .flatMap(experiment -> Mono.just(new ExperimentResponse(experiment, userId)))
                 .onErrorResume(
                         NullPointerException.class,
@@ -69,7 +70,7 @@ public class ExperimentControllerV2 {
     @ResponseStatus(HttpStatus.OK)
     public Mono<ExperimentResponse> assignLoggedOutUserToExperiment(ServerWebExchange exchange) {
         log.info("Assigning logged out user to experiment");
-        return experimentService.assignExperimentToLoggedOutUser(exchange);
+        return assignedExperimentsService.assignExperimentToLoggedOutUser(exchange);
     }
 
     @DeleteMapping("/experiment/{experimentId}")
@@ -83,14 +84,14 @@ public class ExperimentControllerV2 {
     @ResponseStatus(HttpStatus.OK)
     public Mono<Experiment> getAssignedExperiment(@Valid @PathVariable String userId) {
         log.info("Getting assigned experiment for user: {}", userId);
-        return assignedExperimentsRepository.findById(userId);
+        return assignedExperimentsService.findById(userId);
     }
 
     @DeleteMapping("/unassign/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Boolean> deleteAssignedExperiment(@Valid @PathVariable String userId) {
         log.info("Deleting assigned experiment for user: {}", userId);
-        return assignedExperimentsRepository.deleteById(userId);
+        return assignedExperimentsService.deleteById(userId);
     }
 
 }
