@@ -1,5 +1,8 @@
 package com.experiments.controllers;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import com.experiments.domain.Experiment;
 import com.experiments.domain.ExperimentResponse;
 import com.experiments.service.AssignedExperimentsService;
@@ -13,9 +16,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.mockito.Mockito.when;
 
@@ -86,7 +86,7 @@ class ExperimentControllerV2Test {
 
         when(experimentService.findAll()).thenReturn(Flux.fromIterable(experimentList));
 
-        when(experimentService.assignExperiment(userId)).thenReturn(Mono.just(new Experiment(userId, testDate, "WebsiteColour", "Brown")));
+        when(experimentService.assignExperimentToLoggedInUser(userId)).thenReturn(Mono.just(new Experiment(userId, testDate, "WebsiteColour", "Brown")));
 
         String ASSIGN_URL = "/v2/assign";
         webTestClient

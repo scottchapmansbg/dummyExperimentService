@@ -1,9 +1,9 @@
 package com.experiments.service;
 
+import java.util.Map;
+
 import org.apache.el.parser.Token;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 @Service
 public class LoggedOutExperimentAssignmentService {
@@ -17,6 +17,5 @@ public class LoggedOutExperimentAssignmentService {
     public void setExperimentAssignment(String token, String experimentId) {
         experimentAssignments.put(token, experimentId);
     }
-
 
 }

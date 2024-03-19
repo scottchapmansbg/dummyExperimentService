@@ -1,10 +1,10 @@
 package com.experiments.service;
 
-import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
-
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 @Service
 public class UserService {
@@ -28,6 +28,5 @@ public class UserService {
     public Mono<String> createToken(String userId) {
         return Mono.just(userId.hashCode() + System.currentTimeMillis() + "");
     }
-
 
 }

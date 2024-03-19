@@ -19,13 +19,13 @@ public class LoginController {
 
     @GetMapping("/login{$userId}")
     public Mono<String> login(@PathVariable String userId) {
-       return userService.logIn(userId).flatMap(isValid -> {
-           if (isValid) {
-               return Mono.just("Welcome " + userId);
-           } else {
-               return Mono.error(new RuntimeException("Invalid user"));
-           }
-       });
+        return userService.logIn(userId).flatMap(isValid -> {
+            if (isValid) {
+                return Mono.just("Welcome " + userId);
+            } else {
+                return Mono.error(new RuntimeException("Invalid user"));
+            }
+        });
     }
 
     @GetMapping("/logout{$userId}")

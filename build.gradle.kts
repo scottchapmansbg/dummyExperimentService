@@ -2,6 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.2.3"
     id("io.spring.dependency-management") version "1.1.4"
+    id("io.github.tmzk1005.java-formatter") version "1.0.1"
 }
 
 group = "com.experiments"
@@ -51,3 +52,4 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+

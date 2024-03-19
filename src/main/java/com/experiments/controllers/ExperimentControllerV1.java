@@ -1,5 +1,7 @@
 package com.experiments.controllers;
 
+import java.util.HashMap;
+
 import com.experiments.domain.Experiment;
 import com.experiments.domain.ExperimentResponse;
 import jakarta.validation.Valid;
@@ -15,13 +17,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import java.util.HashMap;
-
 
 @RestController
 @RequestMapping("/v1")
 public class ExperimentControllerV1 {
     private final HashMap<String, Experiment> experimentCache = new HashMap<>();
+
     @PostMapping("/experiment")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<Experiment> createExperiment(@RequestBody @Valid Experiment experiment) {
@@ -45,9 +46,8 @@ public class ExperimentControllerV1 {
 
     @DeleteMapping("/experiment")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<Void> DeleteExperiment( @RequestParam  String userId) {
-        if(experimentCache.isEmpty())
-        {
+    public Mono<Void> DeleteExperiment(@RequestParam String userId) {
+        if (experimentCache.isEmpty()) {
             return Mono.error(new Throwable("No experiments set"));
         }
 

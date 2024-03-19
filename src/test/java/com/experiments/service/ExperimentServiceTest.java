@@ -1,5 +1,8 @@
 package com.experiments.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import com.experiments.domain.Experiment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,10 +16,6 @@ import org.springframework.data.redis.core.ReactiveValueOperations;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -35,9 +34,11 @@ class ExperimentServiceTest {
 
     private UserService userService;
     @Autowired
-    private final ExperimentService experimentService = new ExperimentService(reactiveRedisOperations,
-            userService, loggedOutExperimentAssignmentService, 
-            cacheConfig);
+    private final ExperimentService experimentService = new ExperimentService(
+            reactiveRedisOperations,
+            userService, loggedOutExperimentAssignmentService,
+            cacheConfig
+    );
 
     @BeforeEach
     void setUp() {
@@ -48,11 +49,13 @@ class ExperimentServiceTest {
     @Test
     void save() {
 
-
         Experiment experiment = new Experiment();
         experiment.setId("testId");
-        when(reactiveRedisOperations.opsForValue().set(any(String.class), any(Experiment.class))).thenReturn(Mono.just(
-                true));
+        when(reactiveRedisOperations.opsForValue().set(any(String.class), any(Experiment.class))).thenReturn(
+                Mono.just(
+                        true
+                )
+        );
 
         Mono<Experiment> result = experimentService.save(experiment.getId(), experiment);
 
@@ -60,7 +63,6 @@ class ExperimentServiceTest {
                 .expectNext(experiment)
                 .verifyComplete();
         Mockito.verify(reactiveRedisOperations.opsForValue()).set(eq("testId"), eq(experiment));
-
 
     }
 
@@ -108,17 +110,26 @@ class ExperimentServiceTest {
 
     @Test
     void assignExperiment() {
-        var experiments = List.of(new Experiment("testId1",
-                LocalDateTime.now(), "testName1", "testDescription1"),
-                new Experiment("testId2",
-                        LocalDateTime.now(), "testName2", "testDescription2"));
+        var experiments = List.of(
+                new Experiment(
+                        "testId1",
+                        LocalDateTime.now(), "testName1", "testDescription1"
+                ),
+                new Experiment(
+                        "testId2",
+                        LocalDateTime.now(), "testName2", "testDescription2"
+                )
+        );
 
         when(reactiveRedisOperations.keys("*")).thenReturn(Flux.just("key1", "key2"));
         when(reactiveRedisOperations.opsForValue().get("key1")).thenReturn(Mono.just(experiments.get(0)));
         when(reactiveRedisOperations.opsForValue().get("key2")).thenReturn(Mono.just(experiments.get(1)));
         String userId = "testId";
-        when(reactiveRedisOperations.opsForValue().set(any(String.class), any(Experiment.class))).thenReturn(Mono.just(
-                true));
+        when(reactiveRedisOperations.opsForValue().set(any(String.class), any(Experiment.class))).thenReturn(
+                Mono.just(
+                        true
+                )
+        );
 
         int index = Math.floorMod(userId.hashCode(), experiments.size());
         Mono<Experiment> result = experimentService.assignExperimentToLoggedInUser(userId);
