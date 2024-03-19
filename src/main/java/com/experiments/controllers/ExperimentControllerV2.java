@@ -1,9 +1,9 @@
 package com.experiments.controllers;
 
-import com.experiments.exceptionhandler.NoExperimentsAvailableException;
-import com.experiments.service.AssignedExperimentsService;
 import com.experiments.domain.Experiment;
 import com.experiments.domain.ExperimentResponse;
+import com.experiments.exceptionhandler.NoExperimentsAvailableException;
+import com.experiments.service.AssignedExperimentsService;
 import com.experiments.service.ExperimentService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +36,6 @@ public class ExperimentControllerV2 {
         this.experimentService = experimentService;
         this.assignedExperimentsRepository = assignedExperimentsRepository;
     }
-
 
     @PostMapping("/experiment")
     @ResponseStatus(HttpStatus.CREATED)

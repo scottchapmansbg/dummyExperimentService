@@ -1,5 +1,7 @@
 package com.experiments.database;
 
+import java.io.IOException;
+
 import com.experiments.domain.Experiment;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,8 +16,6 @@ import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-
-import java.io.IOException;
 
 @Configuration
 public class ExperimentDatabaseConfiguration {
@@ -45,8 +45,8 @@ public class ExperimentDatabaseConfiguration {
             }
         };
 
-        RedisSerializationContext.RedisSerializationContextBuilder<String, Experiment> builder =
-                RedisSerializationContext.newSerializationContext(new StringRedisSerializer());
+        RedisSerializationContext.RedisSerializationContextBuilder<String, Experiment> builder = RedisSerializationContext
+                .newSerializationContext(new StringRedisSerializer());
 
         RedisSerializationContext<String, Experiment> context = builder.value(serializer).build();
 

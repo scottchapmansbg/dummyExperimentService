@@ -35,8 +35,11 @@ class AssignedExperimentsServiceTest {
     void save() {
         Experiment experiment = new Experiment();
         String userId = "testId";
-        when(reactiveRedisOperations.opsForValue().set(any(String.class), any(Experiment.class))).thenReturn(Mono.just(
-                true));
+        when(reactiveRedisOperations.opsForValue().set(any(String.class), any(Experiment.class))).thenReturn(
+                Mono.just(
+                        true
+                )
+        );
 
         Mono<Experiment> result = assignedExperimentsService.save(userId, experiment);
 

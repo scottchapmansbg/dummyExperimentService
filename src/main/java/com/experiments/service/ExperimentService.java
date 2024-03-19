@@ -1,5 +1,7 @@
 package com.experiments.service;
 
+import java.util.Objects;
+
 import com.experiments.domain.Experiment;
 import com.experiments.exceptionhandler.NoExperimentsAvailableException;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -13,14 +15,13 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Objects;
-
 @Service
 @Slf4j
 public class ExperimentService {
     private final ReactiveRedisOperations<String, Experiment> operations;
 
     private final Cache experimentsCache;
+
     public ExperimentService(ReactiveRedisOperations<String, Experiment> operations, CaffeineCacheManager cacheManager) {
         this.operations = operations;
         this.experimentsCache = cacheManager.getCache("experiments");
