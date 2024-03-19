@@ -74,7 +74,7 @@ public class ExperimentControllerV2 {
 
     @DeleteMapping("/experiment/{experimentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<Void> deleteExperiment(@PathVariable @Valid String experimentId) {
+    public Mono<Void> deleteExperiment(@PathVariable String experimentId) {
         log.info("Deleting experiment with id: {}", experimentId);
         return experimentService.deleteById(experimentId);
     }

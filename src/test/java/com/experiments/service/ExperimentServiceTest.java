@@ -10,6 +10,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.Cache;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.data.redis.core.ReactiveRedisOperations;
 import org.springframework.data.redis.core.ReactiveValueOperations;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 class ExperimentServiceTest {
     @MockBean
-    private CaffeineCacheManager cacheConfig;
+    private CaffeineCacheManager caffeineCacheManager;
 
     @MockBean
     private ReactiveRedisOperations<String, Experiment> reactiveRedisOperations;
@@ -33,17 +34,22 @@ class ExperimentServiceTest {
     private LoggedOutExperimentAssignmentService loggedOutExperimentAssignmentService;
 
     private UserService userService;
-    @Autowired
-    private final ExperimentService experimentService = new ExperimentService(
-            reactiveRedisOperations,
-            userService, loggedOutExperimentAssignmentService,
-            cacheConfig
-    );
+
+    private ExperimentService experimentService;
 
     @BeforeEach
     void setUp() {
         ReactiveValueOperations<String, Experiment> reactiveValueOps = Mockito.mock(ReactiveValueOperations.class);
         when(reactiveRedisOperations.opsForValue()).thenReturn(reactiveValueOps);
+
+        Cache cacheMock = Mockito.mock(Cache.class);
+        when(caffeineCacheManager.getCache("experiments")).thenReturn(cacheMock);
+
+        experimentService = new ExperimentService(
+                reactiveRedisOperations,
+                userService, loggedOutExperimentAssignmentService,
+                caffeineCacheManager
+        );
     }
 
     @Test
@@ -110,6 +116,8 @@ class ExperimentServiceTest {
 
     @Test
     void assignExperiment() {
+        var cacheMock = Mockito.mock(Cache.class);
+        when(caffeineCacheManager.getCache("assignedExperiments")).thenReturn(cacheMock);
         var experiments = List.of(
                 new Experiment(
                         "testId1",
