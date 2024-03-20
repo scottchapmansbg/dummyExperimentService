@@ -28,7 +28,7 @@ class AssignedExperimentsServiceTest {
     private TokenService tokenService;
 
     @MockBean
-    private ExperimentAssignementService experimentAssignementService;
+    private ExperimentAssignmentService experimentAssignmentService;
 
 
     @Autowired
@@ -49,7 +49,7 @@ class AssignedExperimentsServiceTest {
         ReactiveValueOperations<String, Experiment> valueOperationsMock = Mockito.mock(ReactiveValueOperations.class);
         when(reactiveRedisOperations.opsForValue()).thenReturn(valueOperationsMock);
         assignedExperimentsService = new AssignedExperimentsService(reactiveRedisOperations,
-                tokenService, cacheManager, experimentAssignementService, loggedOutExperimentAssignmentService,
+                tokenService, cacheManager, experimentAssignmentService, loggedOutExperimentAssignmentService,
                 experimentResponseService
         );
     }
@@ -105,7 +105,7 @@ class AssignedExperimentsServiceTest {
 
         when(tokenService.hasExperimentCookie(any(ServerHttpRequest.class))).thenReturn(Mono.just(true));
         when(tokenService.getToken(any(ServerWebExchange.class))).thenReturn(Mono.just(token));
-        when(experimentAssignementService.getAssignedExperimentMono(token)).thenReturn(Mono.just(expectedExperiment));
+        when(experimentAssignmentService.getAssignedExperimentMono(token)).thenReturn(Mono.just(expectedExperiment));
 
         Mono<Experiment> result = assignedExperimentsService.assignExperimentToLoggedInUser(userId, serverWebExchange);
 

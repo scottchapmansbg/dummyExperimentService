@@ -19,7 +19,7 @@ public class AssignedExperimentsService {
 
     private final TokenService tokenService;
 
-    private final ExperimentAssignementService experimentAssignementService;
+    private final ExperimentAssignmentService experimentAssignmentService;
 
     private final LoggedOutExperimentAssignmentService loggedOutExperimentAssignmentService;
 
@@ -27,13 +27,13 @@ public class AssignedExperimentsService {
 
 
     public AssignedExperimentsService(ReactiveRedisOperations<String, Experiment> operations,
-                                      TokenService tokenService, CacheManager cacheManager, ExperimentAssignementService experimentAssignementService,
+                                      TokenService tokenService, CacheManager cacheManager, ExperimentAssignmentService experimentAssignmentService,
                                       LoggedOutExperimentAssignmentService loggedOutExperimentAssignmentService,
                                       ExperimentResponseService experimentResponseService
     ) {
         this.operations = operations;
         this.tokenService = tokenService;
-        this.experimentAssignementService = experimentAssignementService;
+        this.experimentAssignmentService = experimentAssignmentService;
 
         this.loggedOutExperimentAssignmentService = loggedOutExperimentAssignmentService;
         this.experimentResponseService = experimentResponseService;
@@ -78,7 +78,7 @@ public class AssignedExperimentsService {
         Objects.requireNonNull(userId, "Id cannot be null");
         return tokenService.hasExperimentCookie(serverWebExchange.getRequest()).flatMap(hasCookie -> {
             Mono<String> tokenMono = hasCookie ? tokenService.getToken(serverWebExchange) : Mono.just(userId);
-            return tokenMono.flatMap(experimentAssignementService::getAssignedExperimentMono);
+            return tokenMono.flatMap(experimentAssignmentService::getAssignedExperimentMono);
         });
     }
 
@@ -86,7 +86,7 @@ public class AssignedExperimentsService {
         return tokenService.hasExperimentCookie(serverWebExchange.getRequest())
                 .flatMap(hasCookie -> tokenService.getTokenOrGenerate(hasCookie, serverWebExchange))
                 .flatMap(token ->
-                        experimentAssignementService.getAssignedExperimentMono(token).flatMap(
+                        experimentAssignmentService.getAssignedExperimentMono(token).flatMap(
                                 experiment -> {
                                     loggedOutExperimentAssignmentService.setExperimentAssignment(token, experiment.getId());
                                     return experimentResponseService.createExperimentResponse(Mono.just(experiment), token);
